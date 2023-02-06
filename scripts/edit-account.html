@@ -1,0 +1,98 @@
+<script>
+    // TODO: Redirect member away from edit-account page if not signed in.
+    // TODO: Better class names
+    const fields = document.querySelectorAll('.memberinfo');
+    const saveChanges = document.querySelector('#saveChanges');
+    const saveChanges2 = document.querySelector('#saveChanges2');
+
+    const urlID = new URLSearchParams(window.location.search).get("uid");
+    console.log(urlID);
+
+    var startingMemberData = {};
+    var endingMemberData = {};
+    var difference = {};
+
+    // TODO: create beforeunload event to prevent navigating away after making changes but before they're saved.
+
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            if (urlID == null) {
+                var url = "/edit-account?uid=" + user.uid;
+                location.href = url;
+            }
+            GetAccessLevel(user.uid);
+        }
+        else {
+            // TODO: Add message to user about why they were sent to the home page.
+            location.href = "/";
+        }
+    });
+
+    function GetAccessLevel(uid) {
+        var accessLevel;
+        firebase.firestore().collection('members').doc(uid).get().then((doc) => {
+            if (doc.exists) {
+                accessLevel = doc.data().accessLevel;
+            }
+        }).then(() => {
+            // If urlID is not equal to uid and user is not an admin, reload page with uid as urlID
+            if ((urlID == uid) || (accessLevel == 3)) {
+                FillFields();
+            }
+            else if ((urlID != uid) && (accessLevel != 3)) {
+                var url = "/edit-account?uid=" + uid;
+                location.href = url;
+            }
+            // If user has completed their profile (accessLevel == 1), redirect to front page with message.
+            else if (accessLevel == 1) {
+                // TODO: Message about redirection
+                location.href = "/";
+            }
+            // If urlID == uid and accessLevel == 0, or accessLevel == 3, fill fields.
+            else {
+                // TODO: Message prompting to contact your administrator.
+            }
+        })
+    }
+
+    function FillFields() {
+        const member = firebase.firestore().collection('members').doc(urlID);
+        member.get().then((doc) => {
+            if (doc.exists) {
+                startingMemberData = doc.data();
+                for (var i = 0; i < fields.length; i++) {
+                    fields[i].value = startingMemberData[fields[i].id];
+                }
+            }
+        })
+    }
+
+    function Save() {
+        // TODO: set email address
+        CheckDifferences();
+    }
+
+    function CheckDifferences() {
+        for (var i = 0; i < fields.length; i++) {
+            endingMemberData[fields[i].id] = fields[i].value;
+        }
+
+        for (var key in endingMemberData) {
+            if (endingMemberData[key] != startingMemberData[key]) {
+                difference[key] = endingMemberData[key];
+            }
+        }
+
+        console.log(difference);
+        UpdateMember(difference);
+    }
+
+    function UpdateMember(difference) {
+        var member = firebase.firestore().collection('members').doc(urlID);
+
+        member.update(difference);
+    }
+
+    saveChanges.addEventListener('click', Save);
+    saveChanges2.addEventListener('click', Save);
+</script>

@@ -1,0 +1,30 @@
+{"members": [
+   {
+     "accessLevel": 0,
+     "primaryEmail": "md4sports@att.net",
+     "firstName": "Nicholas",
+     "lastName": "Piantanida",
+     "primarySpecialty": "Family Medicine,",
+     "city": "Colorado Springs",
+     "highestDegree": "M.D.",
+     "institution": "Uniformed Services Univ. (1993)",
+     "officePhone": "719 365 3600",
+     "officeAddress": "1220 Lake Plaza Dr. Ste 150",
+     "officeWebsite": "",
+     "licenseNum": ""
+   },
+   {
+     "accessLevel": 2,
+     "primaryEmail": "mtlabovich@hotmail.com",
+     "firstName": "Marc",
+     "lastName": "Labovich",
+     "primarySpecialty": "Pathology, Anatomic and Clinical,",
+     "city": "Colorado Springs",
+     "highestDegree": "M.D.",
+     "institution": "USUHS (1993)",
+     "officePhone": "(719) 368-7247",
+     "officeAddress": "2838 Janitell Rd.",
+     "officeWebsite": "",
+     "licenseNum": ""
+   }
+ ]}

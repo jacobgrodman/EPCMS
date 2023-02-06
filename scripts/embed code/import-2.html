@@ -1,0 +1,70 @@
+<script>
+    // Get references to file input and upload button elements
+    const fileInput = document.getElementById("fileInput");
+    const uploadButton = document.getElementById("uploadButton");
+
+    // Reference to Firebase Storage
+    const storage = firebase.storage();
+
+    // Reference to Firestore
+    const db = firebase.firestore().collection("members");
+
+    // Handle file upload
+    uploadButton.addEventListener("click", function () {
+        // Get file
+        const file = fileInput.files[0];
+        
+        // Reference to Firebase Storage file
+        const storageRef = storage.ref(file.name);
+        
+        // Upload file to Firebase Storage
+        storageRef.put(file).then(function (snapshot) {
+            console.log("File uploaded to Firebase Storage");
+            
+            // Read contents of file
+            storageRef.getDownloadURL().then(function (url) {
+                console.log("File URL:", url);
+
+                // Load contents of file into memory
+                fetch(url)
+                      .then(response => response.text())
+                      .then(csv => {
+                            // Split CSV into rows
+                            const rows = csv.split("\n");
+
+                            // Get header row
+                            const header = rows[0].split(",");
+
+                            // Convert rows to JSON
+                            const jsonData = rows.slice(1).map(row => {
+                                const values = row.split(",");
+                                return header.reduce((obj, key, i) => {
+                                    obj[key] = values[i];
+                                    return obj;
+                                }, {});
+                            });
+
+                            jsonData.forEach(data => {
+                                var id;
+                                if (data.email != "") {
+                                    id = data.email;
+                                }
+                                else {
+                                    id = data.username;
+                                }
+                                db.doc(id).set(data);
+                            });
+                          
+                            // Write JSON data to Firestore
+                            //jsonData.forEach(data => {
+                            //    db.add(data).then(docRef => {
+                            //        console.log("Document written with ID: ", docRef.id);
+                            //    }).catch(error => {
+                            //        console.error("Error adding document: ", error);
+                            //    });
+                            //});
+                      });
+            });
+        });
+    });
+</script>

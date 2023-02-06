@@ -1,0 +1,177 @@
+<script>
+    const templateRow = document.querySelector("#row");
+    const sort = document.querySelector("#sort");
+    const arrow = document.querySelector("#arrow");
+    const az = document.querySelector("#az");
+
+    const specialty = document.querySelector("#specialty");
+    const submitFilter = document.querySelector("#submitFilter");
+    const clear = document.querySelector("#clear");
+
+    var filtersCreated = false;
+
+    var db = firebase.firestore().collection("members");
+    var whereQuery = {};
+    
+    var currentSorting = "Z-A";
+    var specialtyList = [];
+
+    //BuildQuery(false);
+    BuildDirectory();
+
+    function BuildDirectory() {
+        BuildQuery(false);
+        SwapSortButton();
+        FillDirectory();
+    }
+
+    function BuildQuery(filterButtonPressed) {
+        db = firebase.firestore().collection("members");
+        if (currentSorting == "A-Z") {
+            db = db.orderBy("lastName", "desc");
+        }
+        else {
+            db = db.orderBy("lastName");
+        }
+
+        if (filterButtonPressed) {
+            for (var key in whereQuery) {
+                db = db.where(key, "==", whereQuery[key]);
+            }
+        }
+    }
+
+    function SwapSortButton() {
+
+        if (currentSorting == "A-Z") {
+            currentSorting = "Z-A";
+            arrow.style.transform = 'rotate(-90deg)';
+        }
+        else {
+            currentSorting = "A-Z";
+            arrow.style.transform = 'rotate(90deg)';
+        }
+
+        az.innerHTML = currentSorting;
+    }
+
+    function RemoveRows() {
+        var rows = document.getElementsByClassName('table-row');
+        while (rows.length > 1) {
+            rows[1].remove();
+        }
+    }
+
+    function FillDirectory() {
+        templateRow.style.display = "flex";
+        RemoveRows();
+
+        CheckFilters();
+        db.get().then(querySnapshot => {
+            querySnapshot.forEach((doc) => {
+                CreateRow(doc);
+
+                // Check if the "specialty" field is not in the specialtyList array
+                if (!specialtyList.includes(doc.data().primarySpecialty)) {
+                    // If not, add the value of the "specialty" field to the specialtyList array
+                    specialtyList.push(doc.data().primarySpecialty);
+                }
+            });
+        }).then(() => {
+            templateRow.style.display = "none";
+            if (!filtersCreated) {
+                CreateFilters();
+                filtersCreated = true;
+            }
+        })
+    }
+
+    function CreateRow(doc) {
+        var userData = doc.data();
+        var newRow = templateRow.cloneNode(true);
+        newRow.id = doc.id;
+        var children = newRow.childNodes;
+
+        //var url = "/profile?uid=" + doc.id;
+        //children[0].setAttribute('href', url);
+
+        var fullName = userData['lastName'] + ", " + userData['firstName'];
+        children[0].childNodes[1].innerHTML = fullName;
+
+        children[1].childNodes[0].innerHTML = userData['primarySpecialty'];
+
+        if (userData['companyURL'] != "") {
+            children[2].childNodes[0].innerHTML = userData['companyURL'];
+            children[2].childNodes[0].setAttribute('href', userData['companyURL']);
+        }
+        else {
+            children[2].childNodes[0].innerHTML = "Company/Practice\n Website Unavailable";
+        }
+
+        templateRow.after(newRow);
+    }
+
+    function CheckFilters() {
+        let radio = document.querySelectorAll("input[type='radio']");
+        var checkedRadio;
+
+        for (var i = 0; i < radio.length; i++) {
+            if (radio[i].checked) {
+                checkedRadio = radio[i];
+            }
+        }
+
+        if (checkedRadio != null) {
+            whereQuery["primarySpecialty"] = checkedRadio.id;
+            BuildQuery(true);
+        }
+        else {
+            BuildQuery(false);
+        }
+    }
+
+    function CreateFilters() {
+        for (let i = 0; i < specialtyList.length; i++) {
+            let wrapper = document.createElement("div");
+            let radio = document.createElement("input");
+            let label = document.createElement("label");
+
+            wrapper.classList.add("checkboxWrapper");
+            wrapper.setAttribute("style", "display: flex;")
+            radio.type = "radio";
+            radio.id = specialtyList[i];
+            radio.name = "specialty";
+            label.setAttribute("for", radio.id);
+            label.innerHTML = specialtyList[i];
+
+            wrapper.appendChild(radio);
+            wrapper.appendChild(label);
+
+            specialty.parentElement.nextElementSibling.appendChild(wrapper);
+        }
+    }
+
+    function ToggleFilterCategory() {
+        var checkboxes = specialty.parentElement.nextElementSibling;
+        if (checkboxes.style.display === "block") {
+            checkboxes.style.display = "none";
+        }
+        else {
+            checkboxes.style.display = "block";
+        }
+    }
+
+    // TODO: this sometimes doesn't refresh properly.
+    function ClearFilters() {
+        let radio = document.querySelectorAll("input[type='radio']");
+        radio.forEach((button) => {
+            button.checked = false;
+            FillDirectory();
+        })
+    }
+
+    sort.addEventListener('click', BuildDirectory);
+    specialty.addEventListener('click', ToggleFilterCategory);
+    submitFilter.addEventListener('click', FillDirectory);
+    clear.addEventListener('click', ClearFilters);
+</script>

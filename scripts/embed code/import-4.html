@@ -1,0 +1,39 @@
+<script>
+    //const importButton = document.querySelector('#importButton');
+
+    const db = firebase.firestore();
+    const fileInput = document.getElementById("fileInput");
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", function() {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const data = JSON.parse(event.target.result);
+            data.forEach(function(item) {
+                var id;
+                if (item["email"] != "") {
+                    id = item["email"];
+                }
+                else {
+                    id = item["username"];
+                }
+                db.collection("members").doc(id).set(item);
+            });
+        };
+        reader.readAsText(file);
+    });
+
+    function AddField() {
+        var fields = {};
+        fields["degree"] = "M.D.";
+        fields["specialty"] = "";
+        fields["practiceURL"] = "";
+        db.collection("members").get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                db.collection("members").doc(doc.id).update(fields);
+            })
+        })
+    }
+
+    importButton.addEventListener('click', AddField);
+</script>

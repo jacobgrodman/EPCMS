@@ -1,0 +1,13 @@
+<body onload="SignOut()"></body>
+
+<script>
+    function SignOut() {
+        firebase.auth().signOut();
+    }
+
+        // Track user login status, Update UI element upon changes on login state\
+    firebase.auth().onAuthStateChanged(user => {
+        if (!user)
+            location.href = "/";
+    })
+</script>

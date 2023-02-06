@@ -1,0 +1,38 @@
+<script>
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            AccessLevelRedirect(user.uid);
+            console.log('user logged in');
+        }
+        else {
+            LoggedOutRedirect();
+            console.log('user logged out');
+        }
+    })
+
+    function AccessLevelRedirect(uid) {
+        member = firebase.firestore().collection('members').doc(uid);
+        member.get().then((doc) => {
+            var memberData = doc.data();
+            if (doc.exists) {
+                if (memberData["accessLevel"] == 1) {
+                    // TODO: add message explaining why logout.
+                    location.href = "/logout";
+                }
+                else if (memberData["accessLevel"] == 0) {
+                    // TODO: message explaining this must be completed before accessing the site.
+                    // Users may logout if they wish to look at the site before completing this step.
+                    location.href = "/edit-account";
+                }
+            }
+        })
+    }
+
+    function LoggedOutRedirect() {
+        var path = location.pathname;
+        if (path == "/dashboard" ||  path == "/profile" || 
+            path == "/edit-account" ||  path == "/import" ) {
+                location = "/";
+        }
+    }
+</script>

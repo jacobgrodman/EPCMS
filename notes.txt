@@ -1,0 +1,13 @@
+member.accessLevel
+member.country
+member.firstName
+member.highestDegree
+member.id
+member.institution
+member.lastName
+member.licenseNum
+member.officeAddress
+member.officePhone
+member.officeWebsite
+member.primaryEmail
+member.primarySpecialty

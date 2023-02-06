@@ -1,0 +1,66 @@
+<script>
+    const recoverContainer = document.querySelector("#recoverContainer");
+    const recoverEmailField = document.querySelector("#recoverEmailField");
+    const recoverEmailButton = document.querySelector("#recoverEmailButton");
+
+    const resetContainer = document.querySelector("#resetContainer");
+    const emailField = document.querySelector("#emailField");
+    const oldPass = document.querySelector("#oldPass");
+    const newPass = document.querySelector("#newPass");
+    const newPassConfirm = document.querySelector("#newPassConfirm");
+    const resetPasswordButton = document.querySelector("#resetPasswordButton");
+
+    function RecoverEmail() {
+        var username = recoverEmailField.value;
+        
+        const db = firebase.firestore().collection('members').where("username", "==", username);
+        console.log(username);
+
+        db.get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                if (doc.exists) {
+                    var userData = doc.data();
+                    if (userData['email'] != "") {
+                        window.alert("Your email address is: " + userData['email']);
+                    }
+                    else {
+                        // TODO: make account with username
+                        window.alert("It looks like we don't have an email address on file for you.\nPlease contact support.")
+                    }
+                    }
+                    else {
+                        window.alert("Invalid username. Please contact us to resolve this issue.");
+                    }
+                })
+        })
+    }
+
+    function ResetPassword() {
+        firebase.auth().signInWithEmailAndPassword(emailField.value, oldPass.value).then(cred => {
+            if ((newPass.value != "") && (newPass.value == newPassConfirm.value)){
+                firebase.auth().currentUser.updatePassword(newPass.value).then(() => {
+                    window.alert("Your password has been changed.");
+                }).catch((error) => {
+                    console.log(error);
+                })
+            }
+            else {
+                console.log("Password entry error.");
+            }
+        })
+    }
+
+    recoverEmailButton.addEventListener('click', RecoverEmail);
+    recoverContainer.addEventListener('keypress', function(event) {
+        if (event.key == "Enter") {
+            recoverEmailButton.click();
+        }
+    })
+
+    resetPasswordButton.addEventListener('click', ResetPassword);
+    resetContainer.addEventListener('keypress', function(event) {
+        if (event.key == "Enter") {
+            resetPasswordButton.click();
+        }
+    })
+</script>

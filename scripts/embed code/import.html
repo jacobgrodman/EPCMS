@@ -1,0 +1,73 @@
+<script>
+    const textField = document.querySelector("#field");
+    const memberImport = document.querySelector("#importButton");
+    const fileExport = document.querySelector("#exportButton");
+
+    function StartImport() {
+        const text = JSON.parse(textField.value);
+        for (var i = 0; i < text.members.length; i++) {
+            var member = text.members[i];
+            var id = member["email"];
+            if (id == "") {
+                id = member["lastName"] + member["firstName"];
+            }
+            console.log(id);
+            const db = firebase.firestore().collection('import');
+            db.doc(id).set(member);
+        }
+    }
+
+    function StartExport() {
+        var memberList = [];
+        var csvString = "data:text/csv;charset=utf-8,";
+        const db = firebase.firestore().collection('members').orderBy('lastName');
+
+        db.get().then((querySnapshot) => {
+            var idFieldName = "id";
+            querySnapshot.forEach(document => {
+                memberList.push({...document.data(), [idFieldName]: document.id});
+            })
+        }).then(() => {
+            csvString += [
+                [
+                    "id",
+                    "accessLevel",
+                    "firstName",
+                    "lastName",
+                    "country",
+                    "highestDegree",
+                    "institution",
+                    "licenseNum",
+                    "officeAddress",
+                    "officePhone",
+                    "officeWebsite",
+                    "primaryEmail",
+                    "primarySpecialty"
+                ],
+                ...memberList.map(member => [
+                    member.id,
+                    member.accessLevel,
+                    member.lastName,
+                    member.firstName,
+                    member.country,
+                    member.highestDegree,
+                    member.institution,
+                    member.licenseNum,
+                    member.officeAddress,
+                    member.officePhone,
+                    member.officeWebsite,
+                    member.primaryEmail,
+                    member.primarySpecialty
+                ])
+            ]
+            .map(e => e.join(",")).join("\n");
+        }).then(() => {
+            console.log(csvString);
+            var encodedUri = encodeURI(csvString);
+            window.open(encodedUri);
+        })
+    }
+
+    memberImport.addEventListener('click', StartImport);
+    fileExport.addEventListener('click', StartExport);
+</script>

@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <!-- Add the Firebase SDKs for Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/7.21.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.21.0/firebase-firestore.js"></script>
+  </head>
+  <body>
+    <input type="file" id="fileInput"/>
+
+    <script>
+      // Initialize Firebase
+      var firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        databaseURL: "YOUR_DATABASE_URL",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      };
+      firebase.initializeApp(firebaseConfig);
+
+      // Get reference to the Firestore service
+      const db = firebase.firestore();
+
+      // Listen for changes to the file input
+      document.querySelector('#fileInput').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+
+        // Create a FileReader object to read the contents of the file
+        const reader = new FileReader();
+        reader.readAsText(file);
+
+        // Listen for the "load" event to fire when the file has been read
+        reader.addEventListener('load', (event) => {
+          // Split the contents of the file into separate lines
+          const lines = event.target.result.split('\n');
+
+          // Parse the header line of the file to determine the field names
+          const headerLine = lines[0];
+          const fieldNames = headerLine.split(',');
+
+          // Loop through the rest of the lines in the file
+          for (let i = 1; i < lines.length; i++) {
+            // Split each line into an array of values
+            const values = lines[i].split(',');
+
+            // Create an object that maps field names to values
+            const data = {};
+            for (let j = 0; j < fieldNames.length; j++) {
+              data[fieldNames[j]] = values[j];
+            }
+
+            // Add the object to the "members" collection in Firestore
+            var id;
+            if (data["email"] != "") {
+                id = data["email"];
+            }
+            else {
+                id = data["username"];
+            }
+            db.collection("members").doc(id).set(data);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
