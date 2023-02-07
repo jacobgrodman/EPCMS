@@ -105,7 +105,9 @@
             children[2].childNodes[0].setAttribute('href', userData['companyURL']);
         }
         else {
-            children[2].childNodes[0].innerHTML = "Company/Practice\n Website Unavailable";
+            children[2].childNodes[0].style.display = "none";
+            children[2].childNodes[1].style.display = "block";
+            children[2].childNodes[1].innerHTML = "Company/Practice\n Website Unavailable";
         }
 
         templateRow.after(newRow);

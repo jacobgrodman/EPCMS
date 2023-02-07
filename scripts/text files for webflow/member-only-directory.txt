@@ -194,14 +194,14 @@ function BuildAddress(userData) {
 
     if (userData["primaryAddress" != ""]) {
         if (userData["primaryAddress2"] != "") {
-            address = address + ", " + userData["primaryAddress2"];
+            address += ", " + userData["primaryAddress2"];
         }
 
         if (userData["primaryAddress3"] != "") {
-            address = address + ", " + userData["primaryAddress3"];
+            address += ", " + userData["primaryAddress3"];
         }
 
-        address = address + "\n" + userData["primaryCity"] + ", " + userData["primaryState"] + " " + userData["primaryZip"]
+        address += "\n" + userData["primaryCity"] + ", " + userData["primaryState"] + " " + userData["primaryZip"]
 
         return address;
     }
